@@ -1,0 +1,1603 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FARMER – Smart Farming Platform</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            farm: {
+              dark: '#1a3a1a',
+              mid: '#2d5a27',
+              light: '#4a8c3f',
+              pale: '#e8f5e0',
+              accent: '#f4a623',
+              brown: '#8b6f47'
+            }
+          },
+          fontFamily: {
+            heading: ['Poppins', 'sans-serif'],
+            body: ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { font-family: 'Poppins', sans-serif; }
+    
+    /* Animations */
+    .fade-in { animation: fadeIn 0.6s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .zoom-in { animation: zoomIn 0.6s ease forwards; }
+    @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    
+    .slide-up { animation: slideUp 0.6s ease forwards; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Screen Transitions */
+    .screen { display: none; height: 100%; width: 100%; overflow-y: auto; }
+    .screen.active { display: flex; }
+    .screen-container { min-height: 100%; display: flex; flex-direction: column; }
+    
+    /* Hero Background */
+    .hero-gradient {
+      background: linear-gradient(135deg, #1a3a1a 0%, #2d5a27 40%, #4a8c3f 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-gradient::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at bottom, rgba(74,140,63,0.3) 0%, transparent 70%);
+    }
+    
+    /* Dashboard Cards */
+    .dashboard-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    
+    .dashboard-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+      border-color: #4a8c3f;
+    }
+    
+    .dashboard-card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+    
+    /* Sections */
+    .section-header {
+      background: linear-gradient(135deg, #1a3a1a 0%, #2d5a27 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .back-btn {
+      background: #f4a623;
+      color: #1a3a1a;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .back-btn:hover {
+      background: #e89910;
+    }
+    
+    /* Step Guide */
+    .step-item {
+      background: #f0f0f0;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      border-left: 4px solid #4a8c3f;
+    }
+    
+    .step-number {
+      background: #4a8c3f;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    
+    /* Weather Cards */
+    .weather-card {
+      background: linear-gradient(135deg, #4a8c3f 0%, #2d5a27 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    
+    /* Info Cards */
+    .info-card {
+      background: #f9f9f9;
+      border: 2px solid #e8f5e0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .info-label {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    
+    .info-value {
+      color: #1a3a1a;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+    
+    /* Username Input */
+    .username-input {
+      width: 100%;
+      padding: 16px;
+      border: 2px solid #e8f5e0;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-family: 'Poppins', sans-serif;
+      margin-bottom: 16px;
+      transition: border-color 0.3s ease;
+    }
+    
+    .username-input:focus {
+      outline: none;
+      border-color: #4a8c3f;
+      box-shadow: 0 0 0 3px rgba(74, 140, 63, 0.1);
+    }
+    
+    /* Buttons */
+    .btn-primary {
+      background: #4a8c3f;
+      color: white;
+      padding: 14px 28px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+    
+    .btn-primary:hover {
+      background: #2d5a27;
+      transform: scale(1.02);
+    }
+    
+    .btn-secondary {
+      background: #f4a623;
+      color: #1a3a1a;
+      padding: 14px 28px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+    
+    .btn-secondary:hover {
+      background: #e89910;
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="bg-white text-gray-800">
+  <!-- Screen 1: Landing Page -->
+  <div id="screen-landing" class="screen active">
+   <div class="screen-container hero-gradient flex flex-col items-center justify-center text-center text-white px-4 relative" style="height: 100%;">
+    <div class="absolute inset-0 opacity-20 overflow-hidden">
+     <div class="absolute top-10 left-10 text-6xl animate-bounce" style="animation-delay: 0s;">
+      🚜
+     </div>
+     <div class="absolute top-32 right-20 text-5xl animate-bounce" style="animation-delay: 0.5s;">
+      🌾
+     </div>
+     <div class="absolute bottom-20 left-1/4 text-6xl animate-bounce" style="animation-delay: 1s;">
+      👨‍🌾
+     </div>
+    </div>
+    <div class="relative z-10">
+     <h1 id="app-title" class="text-6xl md:text-7xl font-bold mb-4 fade-in" style="animation-delay: 0s;">FARMER</h1>
+     <p id="app-tagline" class="text-xl md:text-2xl font-light opacity-90 max-w-xl mx-auto mb-12 fade-in" style="animation-delay: 0.2s;">Smart Farming Starts Here</p>
+     <div class="flex flex-col md:flex-row gap-4 justify-center items-center fade-in" style="animation-delay: 0.4s;"><button onclick="goToScreen('username')" class="btn-secondary px-8 py-4 text-lg flex items-center gap-2"> ⚡ Start <i data-lucide="arrow-right"></i> </button> <button onclick="goToScreen('username')" class="btn-primary px-8 py-4 text-lg flex items-center gap-2 bg-white text-farm-dark hover:bg-gray-100"> 📚 Learn Farming <i data-lucide="arrow-right"></i> </button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Screen 2: Username Entry -->
+  <div id="screen-username" class="screen">
+   <div class="screen-container bg-farm-pale flex items-center justify-center px-4" style="height: 100%;">
+    <div class="w-full max-w-sm fade-in">
+     <div class="text-center mb-8">
+      <h2 class="text-4xl font-bold text-farm-dark mb-2">👋 Welcome!</h2>
+      <p class="text-gray-600">Enter your name to get started</p>
+     </div>
+     <form id="username-form" onsubmit="submitUsername(event)"><input id="username-input" type="text" class="username-input" placeholder="Enter your name" required> <button type="submit" class="btn-primary w-full py-4 text-lg font-bold">Continue →</button>
+     </form>
+    </div>
+   </div>
+  </div><!-- Screen 3: Dashboard -->
+  <div id="screen-dashboard" class="screen">
+   <div class="screen-container bg-white px-4 py-8">
+    <div class="max-w-7xl mx-auto">
+     <div class="mb-8 fade-in">
+      <h2 class="text-3xl font-bold text-farm-dark mb-2">👋 Hello, <span id="greeting-name">Farmer</span>!</h2>
+      <p class="text-gray-600">Choose a section to learn more about farming</p>
+     </div><!-- Dashboard Grid -->
+     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div class="dashboard-card zoom-in" onclick="goToScreen('howto')" style="animation-delay: 0s;">
+       <div class="dashboard-card-icon">
+        🌱
+       </div>
+       <h3 class="font-bold text-sm">How to Farm</h3>
+       <p class="text-xs text-gray-600 mt-1">Step-by-step guide</p>
+      </div>
+      <div class="dashboard-card zoom-in" onclick="goToScreen('videos')" style="animation-delay: 0.1s;">
+       <div class="dashboard-card-icon">
+        🎥
+       </div>
+       <h3 class="font-bold text-sm">Video Learning</h3>
+       <p class="text-xs text-gray-600 mt-1">Watch tutorials</p>
+      </div>
+      <div class="dashboard-card zoom-in" onclick="goToScreen('harvest')" style="animation-delay: 0.2s;">
+       <div class="dashboard-card-icon">
+        🌾
+       </div>
+       <h3 class="font-bold text-sm">Harvest Guide</h3>
+       <p class="text-xs text-gray-600 mt-1">Cutting &amp; timing</p>
+      </div>
+      <div class="dashboard-card zoom-in" onclick="goToScreen('weather')" style="animation-delay: 0.3s;">
+       <div class="dashboard-card-icon">
+        🌦️
+       </div>
+       <h3 class="font-bold text-sm">Weather</h3>
+       <p class="text-xs text-gray-600 mt-1">Live conditions</p>
+      </div>
+      <div class="dashboard-card zoom-in" onclick="goToScreen('season')" style="animation-delay: 0.4s;">
+       <div class="dashboard-card-icon">
+        📅
+       </div>
+       <h3 class="font-bold text-sm">Season &amp; Crops</h3>
+       <p class="text-xs text-gray-600 mt-1">Best crops now</p>
+      </div>
+      <div class="dashboard-card zoom-in" onclick="goToScreen('cost')" style="animation-delay: 0.5s;">
+       <div class="dashboard-card-icon">
+        💰
+       </div>
+       <h3 class="font-bold text-sm">Cost &amp; Profit</h3>
+       <p class="text-xs text-gray-600 mt-1">Budget planning</p>
+      </div>
+      <div class="dashboard-card zoom-in" onclick="goToScreen('nutrients')" style="animation-delay: 0.6s;">
+       <div class="dashboard-card-icon">
+        🌿
+       </div>
+       <h3 class="font-bold text-sm">Nutrients</h3>
+       <p class="text-xs text-gray-600 mt-1">NPK guide</p>
+      </div>
+      <div class="dashboard-card zoom-in" onclick="goToScreen('region')" style="animation-delay: 0.7s;">
+       <div class="dashboard-card-icon">
+        📍
+       </div>
+       <h3 class="font-bold text-sm">Region Based</h3>
+       <p class="text-xs text-gray-600 mt-1">Your area crops</p>
+      </div>
+      <div class="dashboard-card zoom-in" onclick="goToScreen('helpline')" style="animation-delay: 0.8s;">
+       <div class="dashboard-card-icon">
+        ☎️
+       </div>
+       <h3 class="font-bold text-sm">Helpline</h3>
+       <p class="text-xs text-gray-600 mt-1">Call for help</p>
+      </div>
+      <div class="dashboard-card zoom-in" onclick="goToScreen('drought')" style="animation-delay: 0.9s;">
+       <div class="dashboard-card-icon">
+        🚱
+       </div>
+       <h3 class="font-bold text-sm">Low Rain</h3>
+       <p class="text-xs text-gray-600 mt-1">Drought solutions</p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Section Screens --> <!-- How to Farm -->
+  <div id="screen-howto" class="screen">
+   <div class="screen-container bg-white px-4 py-6">
+    <div class="max-w-4xl mx-auto"><button class="back-btn" onclick="goToScreen('dashboard')"><i data-lucide="arrow-left"></i> Back</button>
+     <div class="section-header">
+      <h2 class="text-3xl font-bold">🌱 How to Farm</h2>
+      <p class="opacity-90 mt-2">Complete step-by-step farming guide</p>
+     </div>
+     <div class="mb-6">
+      <h3 class="text-xl font-bold text-farm-dark mb-4">Crop: 🌾 Wheat</h3>
+      <div class="info-card">
+       <div class="info-label">
+        Sowing Season
+       </div>
+       <div class="info-value">
+        November
+       </div>
+      </div>
+      <div class="info-card">
+       <div class="info-label">
+        Harvest Season
+       </div>
+       <div class="info-value">
+        April
+       </div>
+      </div>
+      <div class="info-card">
+       <div class="info-label">
+        Duration
+       </div>
+       <div class="info-value">
+        5-6 Months
+       </div>
+      </div>
+     </div>
+     <h3 class="text-xl font-bold text-farm-dark mb-4">Step-by-Step Process:</h3>
+     <div class="step-item">
+      <div class="step-number">
+       1
+      </div>
+      <h4 class="font-bold text-farm-dark mb-2">🌍 Soil Preparation</h4>
+      <p class="text-sm text-gray-700">Plow the field 3-4 times to break hard soil. Add compost or manure. Level the field for uniform irrigation. Check soil pH (6-7 is best).</p>
+     </div>
+     <div class="step-item">
+      <div class="step-number">
+       2
+      </div>
+      <h4 class="font-bold text-farm-dark mb-2">🌰 Seed Selection &amp; Treatment</h4>
+      <p class="text-sm text-gray-700">Choose certified seeds (DBW 187, PBW 550 varieties). Treat seeds with Trichoderma to prevent diseases. Use 100 kg seeds per acre.</p>
+     </div>
+     <div class="step-item">
+      <div class="step-number">
+       3
+      </div>
+      <h4 class="font-bold text-farm-dark mb-2">💧 Irrigation Method</h4>
+      <p class="text-sm text-gray-700">1st Irrigation: 20-25 days after sowing. 2nd: 40-45 days. 3rd: 60-65 days. Use drip irrigation if available for water saving.</p>
+     </div>
+     <div class="step-item">
+      <div class="step-number">
+       4
+      </div>
+      <h4 class="font-bold text-farm-dark mb-2">🧪 Fertilizer Application</h4>
+      <p class="text-sm text-gray-700">Basal: 30-30-15 NPK. Top dressing: 40 kg N at 30 days. Foliar spray: 2% DAP at 60 days.</p>
+     </div>
+     <div class="step-item">
+      <div class="step-number">
+       5
+      </div>
+      <h4 class="font-bold text-farm-dark mb-2">🐛 Pest Management</h4>
+      <p class="text-sm text-gray-700">Watch for aphids, armyworms. Use Neem oil spray (5%) or spray Imidacloprid (17.8 SL) at early sign.</p>
+     </div>
+     <div class="step-item">
+      <div class="step-number">
+       6
+      </div>
+      <h4 class="font-bold text-farm-dark mb-2">🌾 Harvesting</h4>
+      <p class="text-sm text-gray-700">Harvest when leaves turn yellow and grains are hard. Use combine harvester or manual cutting. Store in dry place.</p>
+     </div>
+    </div>
+   </div>
+  </div><!-- Videos -->
+  <div id="screen-videos" class="screen">
+   <div class="screen-container bg-farm-pale px-4 py-6">
+    <div class="max-w-4xl mx-auto"><button class="back-btn" onclick="goToScreen('dashboard')"><i data-lucide="arrow-left"></i> Back</button>
+     <div class="section-header">
+      <h2 class="text-3xl font-bold">🎥 Video Learning</h2>
+      <p class="opacity-90 mt-2">Watch and learn farming techniques</p>
+     </div>
+     <div class="grid gap-4">
+      <div class="dashboard-card cursor-default hover:shadow-md">
+       <div class="text-4xl mb-3">
+        📹
+       </div>
+       <h3 class="font-bold">How to Grow Rice Step by Step</h3>
+       <p class="text-sm text-gray-600 mt-2">15 mins • Beginner</p>
+       <p class="text-xs text-gray-500 mt-2">Learn rice cultivation from sowing to harvest with expert tips.</p>
+      </div>
+      <div class="dashboard-card cursor-default hover:shadow-md">
+       <div class="text-4xl mb-3">
+        💧
+       </div>
+       <h3 class="font-bold">Best Irrigation Methods</h3>
+       <p class="text-sm text-gray-600 mt-2">12 mins • Beginner</p>
+       <p class="text-xs text-gray-500 mt-2">Flood, drip, and sprinkler irrigation explained with visuals.</p>
+      </div>
+      <div class="dashboard-card cursor-default hover:shadow-md">
+       <div class="text-4xl mb-3">
+        🧪
+       </div>
+       <h3 class="font-bold">Soil Testing at Home</h3>
+       <p class="text-sm text-gray-600 mt-2">8 mins • Beginner</p>
+       <p class="text-xs text-gray-500 mt-2">Simple DIY soil testing method without lab equipment.</p>
+      </div>
+      <div class="dashboard-card cursor-default hover:shadow-md">
+       <div class="text-4xl mb-3">
+        🐛
+       </div>
+       <h3 class="font-bold">Organic Pest Control</h3>
+       <p class="text-sm text-gray-600 mt-2">10 mins • Intermediate</p>
+       <p class="text-xs text-gray-500 mt-2">Natural solutions to control common farm pests.</p>
+      </div>
+      <div class="dashboard-card cursor-default hover:shadow-md">
+       <div class="text-4xl mb-3">
+        🏆
+       </div>
+       <h3 class="font-bold">Government Schemes for Farmers</h3>
+       <p class="text-sm text-gray-600 mt-2">20 mins • All levels</p>
+       <p class="text-xs text-gray-500 mt-2">Explore PM-KISAN, crop insurance, and other benefits.</p>
+      </div>
+      <div class="dashboard-card cursor-default hover:shadow-md">
+       <div class="text-4xl mb-3">
+        ♻️
+       </div>
+       <h3 class="font-bold">Crop Rotation Benefits</h3>
+       <p class="text-sm text-gray-600 mt-2">7 mins • Beginner</p>
+       <p class="text-xs text-gray-500 mt-2">Learn how crop rotation improves soil fertility.</p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Harvest Guide -->
+  <div id="screen-harvest" class="screen">
+   <div class="screen-container bg-white px-4 py-6">
+    <div class="max-w-4xl mx-auto"><button class="back-btn" onclick="goToScreen('dashboard')"><i data-lucide="arrow-left"></i> Back</button>
+     <div class="section-header">
+      <h2 class="text-3xl font-bold">🌾 Crop Cutting &amp; Harvest Guide</h2>
+      <p class="opacity-90 mt-2">Know when and how to harvest your crop</p>
+     </div>
+     <h3 class="text-xl font-bold text-farm-dark mb-4">🍚 RICE</h3>
+     <div class="info-card">
+      <div class="info-label">
+       ⏱️ Harvesting Time
+      </div>
+      <div class="info-value">
+       3–4 months after sowing
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       👀 Ready to Harvest Signs
+      </div>
+      <div class="info-value">
+       Yellow/golden leaves, dry grains, grain falls easily from stalk
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       ✂️ Harvesting Method
+      </div>
+      <div class="info-value">
+       Use sickle or combine harvester. Cut 15-20 cm above ground.
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       💧 Moisture Content
+      </div>
+      <div class="info-value">
+       13-14% (optimal for storage)
+      </div>
+     </div>
+     <h3 class="text-xl font-bold text-farm-dark mb-4 mt-8">🌾 WHEAT</h3>
+     <div class="info-card">
+      <div class="info-label">
+       ⏱️ Harvesting Time
+      </div>
+      <div class="info-value">
+       5–6 months after sowing
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       👀 Ready to Harvest Signs
+      </div>
+      <div class="info-value">
+       Ears bend down, grain is hard, straw turns brown
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       ✂️ Harvesting Method
+      </div>
+      <div class="info-value">
+       Use combine harvester for efficient harvesting
+      </div>
+     </div>
+     <h3 class="text-xl font-bold text-farm-dark mb-4 mt-8">🧶 COTTON</h3>
+     <div class="info-card">
+      <div class="info-label">
+       ⏱️ Harvesting Time
+      </div>
+      <div class="info-value">
+       3–4 months after flowering
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       👀 Ready to Harvest Signs
+      </div>
+      <div class="info-value">
+       Bolls open, cotton is fluffy and white
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       ✂️ Harvesting Method
+      </div>
+      <div class="info-value">
+       Manual picking or mechanical picker
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Weather -->
+  <div id="screen-weather" class="screen">
+   <div class="screen-container bg-farm-pale px-4 py-6">
+    <div class="max-w-4xl mx-auto"><button class="back-btn" onclick="goToScreen('dashboard')"><i data-lucide="arrow-left"></i> Back</button>
+     <div class="section-header">
+      <h2 class="text-3xl font-bold">🌦️ Weather Information</h2>
+      <p class="opacity-90 mt-2">Current weather and farming recommendations</p>
+     </div>
+     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+      <div class="weather-card">
+       <div class="text-4xl">
+        🌡️
+       </div>
+       <div class="text-2xl font-bold">
+        32°C
+       </div>
+       <div class="text-sm">
+        Temperature
+       </div>
+      </div>
+      <div class="weather-card">
+       <div class="text-4xl">
+        🌧️
+       </div>
+       <div class="text-2xl font-bold">
+        60%
+       </div>
+       <div class="text-sm">
+        Rainfall Chance
+       </div>
+      </div>
+      <div class="weather-card">
+       <div class="text-4xl">
+        💨
+       </div>
+       <div class="text-2xl font-bold">
+        12 km/h
+       </div>
+       <div class="text-sm">
+        Wind Speed
+       </div>
+      </div>
+      <div class="weather-card">
+       <div class="text-4xl">
+        💧
+       </div>
+       <div class="text-2xl font-bold">
+        65%
+       </div>
+       <div class="text-sm">
+        Humidity
+       </div>
+      </div>
+      <div class="weather-card">
+       <div class="text-4xl">
+        ☀️
+       </div>
+       <div class="text-2xl font-bold">
+        6h 45m
+       </div>
+       <div class="text-sm">
+        Sunshine
+       </div>
+      </div>
+      <div class="weather-card">
+       <div class="text-4xl">
+        🌪️
+       </div>
+       <div class="text-2xl font-bold">
+        1013 mb
+       </div>
+       <div class="text-sm">
+        Pressure
+       </div>
+      </div>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-3">📅 7-Day Weather Forecast</h3>
+     <div class="grid gap-2">
+      <div class="info-card flex justify-between items-center">
+       <div>
+        <div class="font-bold">
+         Monday
+        </div>
+        <div class="text-sm text-gray-600">
+         ☀️ Sunny
+        </div>
+       </div>
+       <div class="text-right">
+        <div class="font-bold">
+         34°C
+        </div>
+        <div class="text-sm text-gray-600">
+         10% rain
+        </div>
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        <div class="font-bold">
+         Tuesday
+        </div>
+        <div class="text-sm text-gray-600">
+         ⛅ Partly Cloudy
+        </div>
+       </div>
+       <div class="text-right">
+        <div class="font-bold">
+         31°C
+        </div>
+        <div class="text-sm text-gray-600">
+         20% rain
+        </div>
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        <div class="font-bold">
+         Wednesday
+        </div>
+        <div class="text-sm text-gray-600">
+         🌧️ Rainy
+        </div>
+       </div>
+       <div class="text-right">
+        <div class="font-bold">
+         28°C
+        </div>
+        <div class="text-sm text-gray-600">
+         80% rain
+        </div>
+       </div>
+      </div>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mt-6 mb-3">💡 Farming Advice</h3>
+     <div class="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
+      <p class="text-sm text-gray-700">🌧️ Rain expected in 3 days. Plan irrigation accordingly. Avoid spraying pesticides today due to windy conditions.</p>
+     </div>
+    </div>
+   </div>
+  </div><!-- Season & Crops -->
+  <div id="screen-season" class="screen">
+   <div class="screen-container bg-white px-4 py-6">
+    <div class="max-w-4xl mx-auto"><button class="back-btn" onclick="goToScreen('dashboard')"><i data-lucide="arrow-left"></i> Back</button>
+     <div class="section-header">
+      <h2 class="text-3xl font-bold">📅 Season &amp; Crop Selection</h2>
+      <p class="opacity-90 mt-2">Best crops for each season</p>
+     </div>
+     <h3 class="text-xl font-bold text-farm-dark mb-4">🌾 KHARIF (Monsoon: Jun–Oct)</h3>
+     <div class="grid gap-3">
+      <div class="info-card flex justify-between items-center">
+       <div>
+        <div class="font-bold">
+         🍚 Rice
+        </div>
+        <div class="text-xs text-gray-600">
+         Needs water &amp; humidity
+        </div>
+       </div>
+       <div class="text-right font-bold">
+        25-30 Q/acre
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        <div class="font-bold">
+         🧶 Cotton
+        </div>
+        <div class="text-xs text-gray-600">
+         High market demand
+        </div>
+       </div>
+       <div class="text-right font-bold">
+        8-10 Q/acre
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        <div class="font-bold">
+         🌽 Maize
+        </div>
+        <div class="text-xs text-gray-600">
+         Good yield potential
+        </div>
+       </div>
+       <div class="text-right font-bold">
+        20-25 Q/acre
+       </div>
+      </div>
+     </div>
+     <h3 class="text-xl font-bold text-farm-dark mb-4 mt-6">❄️ RABI (Winter: Nov–Apr)</h3>
+     <div class="grid gap-3">
+      <div class="info-card flex justify-between items-center">
+       <div>
+        <div class="font-bold">
+         🌾 Wheat
+        </div>
+        <div class="text-xs text-gray-600">
+         Best profit crop
+        </div>
+       </div>
+       <div class="text-right font-bold">
+        20-25 Q/acre
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        <div class="font-bold">
+         🟡 Mustard
+        </div>
+        <div class="text-xs text-gray-600">
+         Oil extraction
+        </div>
+       </div>
+       <div class="text-right font-bold">
+        8-10 Q/acre
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        <div class="font-bold">
+         🟢 Chickpea
+        </div>
+        <div class="text-xs text-gray-600">
+         Good for soil
+        </div>
+       </div>
+       <div class="text-right font-bold">
+        8-12 Q/acre
+       </div>
+      </div>
+     </div>
+     <h3 class="text-xl font-bold text-farm-dark mb-4 mt-6">☀️ SUMMER (Feb–May)</h3>
+     <div class="grid gap-3">
+      <div class="info-card flex justify-between items-center">
+       <div>
+        <div class="font-bold">
+         🍬 Sugarcane
+        </div>
+        <div class="text-xs text-gray-600">
+         Long-term crop
+        </div>
+       </div>
+       <div class="text-right font-bold">
+        350-400 Q/acre
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        <div class="font-bold">
+         🌻 Sunflower
+        </div>
+        <div class="text-xs text-gray-600">
+         Oil seeds
+        </div>
+       </div>
+       <div class="text-right font-bold">
+        6-8 Q/acre
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Cost & Profit -->
+  <div id="screen-cost" class="screen">
+   <div class="screen-container bg-farm-pale px-4 py-6">
+    <div class="max-w-4xl mx-auto"><button class="back-btn" onclick="goToScreen('dashboard')"><i data-lucide="arrow-left"></i> Back</button>
+     <div class="section-header">
+      <h2 class="text-3xl font-bold">💰 Cost &amp; Profit Analysis</h2>
+      <p class="opacity-90 mt-2">Budget planning for wheat farming (1 acre)</p>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4">📊 EXPENSES</h3>
+     <div class="grid gap-2">
+      <div class="info-card flex justify-between items-center">
+       <div>
+        🌰 Seeds (10 kg certified)
+       </div>
+       <div class="font-bold text-red-600">
+        ₹2,000
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        🧪 Fertilizers (Basal + Top)
+       </div>
+       <div class="font-bold text-red-600">
+        ₹3,500
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        💧 Irrigation (4 times)
+       </div>
+       <div class="font-bold text-red-600">
+        ₹2,000
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        👷 Labor (Plowing + Weeding)
+       </div>
+       <div class="font-bold text-red-600">
+        ₹4,500
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        🚜 Harvesting &amp; Threshing
+       </div>
+       <div class="font-bold text-red-600">
+        ₹3,000
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        🐛 Pesticides &amp; Fungicides
+       </div>
+       <div class="font-bold text-red-600">
+        ₹1,500
+       </div>
+      </div>
+     </div>
+     <div class="bg-gray-100 rounded-lg p-4 mt-4 mb-6 flex justify-between items-center border-2 border-gray-300">
+      <div class="font-bold">
+       💵 Total Expenses
+      </div>
+      <div class="text-2xl font-bold text-gray-800">
+       ₹16,500
+      </div>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4">📈 EXPECTED REVENUE</h3>
+     <div class="bg-green-50 border-2 border-green-300 rounded-lg p-4">
+      <div class="flex justify-between items-center mb-3">
+       <div>
+        Expected Yield (Wheat)
+       </div>
+       <div class="font-bold">
+        20-25 quintals
+       </div>
+      </div>
+      <div class="flex justify-between items-center mb-3">
+       <div>
+        Current Market Price
+       </div>
+       <div class="font-bold">
+        ₹2,200/quintal
+       </div>
+      </div>
+      <div class="flex justify-between items-center border-t-2 border-green-300 pt-3">
+       <div class="font-bold">
+        Total Revenue (22 Q avg)
+       </div>
+       <div class="text-2xl font-bold text-green-700">
+        ₹48,400
+       </div>
+      </div>
+     </div>
+     <div class="bg-gradient-to-r from-farm-light to-farm-mid rounded-lg p-4 mt-6 text-white">
+      <h3 class="font-bold mb-3">🎯 PROFIT CALCULATION</h3>
+      <div class="flex justify-between items-center mb-2">
+       <div>
+        Revenue
+       </div>
+       <div class="font-bold">
+        ₹48,400
+       </div>
+      </div>
+      <div class="flex justify-between items-center mb-2">
+       <div>
+        - Expenses
+       </div>
+       <div class="font-bold">
+        -₹16,500
+       </div>
+      </div>
+      <div class="flex justify-between items-center border-t-2 border-white pt-2 text-2xl">
+       <div class="font-bold">
+        Net Profit
+       </div>
+       <div class="font-bold">
+        ₹31,900
+       </div>
+      </div>
+      <div class="text-sm mt-3">
+       💡 Profit Margin: 66% | ROI: 193%
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Nutrients -->
+  <div id="screen-nutrients" class="screen">
+   <div class="screen-container bg-white px-4 py-6">
+    <div class="max-w-4xl mx-auto"><button class="back-btn" onclick="goToScreen('dashboard')"><i data-lucide="arrow-left"></i> Back</button>
+     <div class="section-header">
+      <h2 class="text-3xl font-bold">🌿 Nutrients &amp; Fertilizer Guide</h2>
+      <p class="opacity-90 mt-2">NPK guide for healthy crops</p>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4">🟡 NITROGEN (N)</h3>
+     <div class="info-card">
+      <div class="info-label">
+       Function
+      </div>
+      <div class="info-value">
+       Essential for leaf and stem growth
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Sources
+      </div>
+      <div class="info-value">
+       Urea (46%), Ammonium Sulfate
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Dosage (per acre)
+      </div>
+      <div class="info-value">
+       50-100 kg (depends on crop)
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Deficiency Signs
+      </div>
+      <div class="info-value">
+       Yellowing leaves, stunted growth
+      </div>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4 mt-6">🟣 PHOSPHORUS (P)</h3>
+     <div class="info-card">
+      <div class="info-label">
+       Function
+      </div>
+      <div class="info-value">
+       Promotes root and fruit development
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Sources
+      </div>
+      <div class="info-value">
+       DAP (18-46), SSP (16% P)
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Dosage (per acre)
+      </div>
+      <div class="info-value">
+       20-30 kg P₂O₅
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Deficiency Signs
+      </div>
+      <div class="info-value">
+       Purple leaves, poor root growth
+      </div>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4 mt-6">⚫ POTASSIUM (K)</h3>
+     <div class="info-card">
+      <div class="info-label">
+       Function
+      </div>
+      <div class="info-value">
+       Strengthens plant immunity &amp; fruit quality
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Sources
+      </div>
+      <div class="info-value">
+       MOP (60% K), SOP (50% K)
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Dosage (per acre)
+      </div>
+      <div class="info-value">
+       15-20 kg K₂O
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Deficiency Signs
+      </div>
+      <div class="info-value">
+       Leaf edges brown, weak stems
+      </div>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4 mt-6">📊 Recommended NPK Ratio by Crop</h3>
+     <div class="grid gap-2">
+      <div class="info-card flex justify-between items-center">
+       <div>
+        🌾 Wheat
+       </div>
+       <div class="font-bold">
+        30:30:15
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        🍚 Rice
+       </div>
+       <div class="font-bold">
+        40:20:20
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        🧶 Cotton
+       </div>
+       <div class="font-bold">
+        40:25:20
+       </div>
+      </div>
+      <div class="info-card flex justify-between items-center">
+       <div>
+        🌽 Maize
+       </div>
+       <div class="font-bold">
+        45:30:20
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Region Based -->
+  <div id="screen-region" class="screen">
+   <div class="screen-container bg-farm-pale px-4 py-6">
+    <div class="max-w-4xl mx-auto"><button class="back-btn" onclick="goToScreen('dashboard')"><i data-lucide="arrow-left"></i> Back</button>
+     <div class="section-header">
+      <h2 class="text-3xl font-bold">📍 Region-Based Crop Suggestions</h2>
+      <p class="opacity-90 mt-2">Best crops for different regions</p>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4">🏔️ NORTHERN PLAINS</h3>
+     <div class="info-card">
+      <div class="info-label">
+       Soil Type
+      </div>
+      <div class="info-value">
+       Alluvial Soil (High Fertility)
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       States
+      </div>
+      <div class="info-value">
+       Punjab, Haryana, UP, Rajasthan
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Best Crops
+      </div>
+      <div class="info-value">
+       🌾 Wheat • 🍚 Rice • 🍬 Sugarcane • 🌽 Maize
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Rainfall
+      </div>
+      <div class="info-value">
+       500-1000 mm annually
+      </div>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4 mt-6">🏜️ WESTERN REGION</h3>
+     <div class="info-card">
+      <div class="info-label">
+       Soil Type
+      </div>
+      <div class="info-value">
+       Black/Sandy Soil (Semi-arid)
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       States
+      </div>
+      <div class="info-value">
+       Gujarat, Maharashtra, Rajasthan
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Best Crops
+      </div>
+      <div class="info-value">
+       🧶 Cotton • 🥜 Groundnut • 🌾 Bajra • 🌻 Sunflower
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Rainfall
+      </div>
+      <div class="info-value">
+       300-700 mm annually
+      </div>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4 mt-6">🌴 SOUTHERN COAST</h3>
+     <div class="info-card">
+      <div class="info-label">
+       Soil Type
+      </div>
+      <div class="info-value">
+       Laterite/Red Soil (High moisture)
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       States
+      </div>
+      <div class="info-value">
+       Karnataka, Kerala, Tamil Nadu
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Best Crops
+      </div>
+      <div class="info-value">
+       🥥 Coconut • 🌶️ Pepper • 🍌 Banana • ☕ Coffee
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Rainfall
+      </div>
+      <div class="info-value">
+       2000-3000 mm annually
+      </div>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4 mt-6">🌊 EASTERN REGION</h3>
+     <div class="info-card">
+      <div class="info-label">
+       Soil Type
+      </div>
+      <div class="info-value">
+       Alluvial/Clay Soil (Fertile)
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       States
+      </div>
+      <div class="info-value">
+       West Bengal, Bihar, Odisha
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Best Crops
+      </div>
+      <div class="info-value">
+       🍚 Rice • 🍌 Banana • 🥔 Potato • 🎋 Jute
+      </div>
+     </div>
+     <div class="info-card">
+      <div class="info-label">
+       Rainfall
+      </div>
+      <div class="info-value">
+       1500-2500 mm annually
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Helpline -->
+  <div id="screen-helpline" class="screen">
+   <div class="screen-container bg-white px-4 py-6">
+    <div class="max-w-4xl mx-auto"><button class="back-btn" onclick="goToScreen('dashboard')"><i data-lucide="arrow-left"></i> Back</button>
+     <div class="section-header">
+      <h2 class="text-3xl font-bold">☎️ Helpline &amp; Support</h2>
+      <p class="opacity-90 mt-2">Get help from agriculture experts</p>
+     </div>
+     <div class="bg-gradient-to-br from-farm-light to-farm-mid rounded-lg p-8 text-white text-center mb-6">
+      <div class="text-5xl mb-4">
+       📞
+      </div>
+      <h3 class="text-2xl font-bold mb-2">Farmer Helpline</h3>
+      <p id="helpline-main" class="text-3xl font-bold mb-4">1800-XXX-XXXX</p>
+      <p class="opacity-90">Available Mon-Sat, 8 AM – 6 PM</p>
+      <p class="text-sm opacity-75 mt-2">All calls are FREE</p>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4">📱 Other Support Channels</h3>
+     <div class="grid gap-3">
+      <div class="dashboard-card cursor-default hover:shadow-md">
+       <div class="text-3xl mb-2">
+        💬
+       </div>
+       <h4 class="font-bold">WhatsApp Support</h4>
+       <p class="text-sm text-gray-600 mt-1">Send photos &amp; questions</p>
+       <p class="text-xs text-gray-500 mt-2">📱 Message: "HELP"</p>
+      </div>
+      <div class="dashboard-card cursor-default hover:shadow-md">
+       <div class="text-3xl mb-2">
+        📧
+       </div>
+       <h4 class="font-bold">Email Support</h4>
+       <p class="text-sm text-gray-600 mt-1">Send detailed queries</p>
+       <p class="text-xs text-gray-500 mt-2">📧 support@farmer.in</p>
+      </div>
+      <div class="dashboard-card cursor-default hover:shadow-md">
+       <div class="text-3xl mb-2">
+        🏢
+       </div>
+       <h4 class="font-bold">Visit Local Office</h4>
+       <p class="text-sm text-gray-600 mt-1">Agricultural Department</p>
+       <p class="text-xs text-gray-500 mt-2">Contact your block office</p>
+      </div>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4 mt-6">❓ Frequently Asked Questions</h3>
+     <div class="grid gap-2">
+      <div class="info-card">
+       <div class="font-bold">
+        When should I apply fertilizer?
+       </div>
+       <div class="text-sm text-gray-700 mt-1">
+        Basal before sowing, top-dressing at 30 days, foliar at 60 days.
+       </div>
+      </div>
+      <div class="info-card">
+       <div class="font-bold">
+        How much water does wheat need?
+       </div>
+       <div class="text-sm text-gray-700 mt-1">
+        4-5 irrigations of 50-60 mm each, depending on rainfall.
+       </div>
+      </div>
+      <div class="info-card">
+       <div class="font-bold">
+        How to control pests naturally?
+       </div>
+       <div class="text-sm text-gray-700 mt-1">
+        Use Neem oil spray, set up traps, or consult local experts.
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Drought Solutions -->
+  <div id="screen-drought" class="screen">
+   <div class="screen-container bg-farm-pale px-4 py-6">
+    <div class="max-w-4xl mx-auto"><button class="back-btn" onclick="goToScreen('dashboard')"><i data-lucide="arrow-left"></i> Back</button>
+     <div class="section-header">
+      <h2 class="text-3xl font-bold">🚱 Low Rain &amp; Drought Solutions</h2>
+      <p class="opacity-90 mt-2">What to do when rainfall is insufficient</p>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4">💡 Water Management Strategies</h3>
+     <div class="step-item">
+      <div class="step-number">
+       1
+      </div>
+      <h4 class="font-bold text-farm-dark mb-2">💧 Drip Irrigation</h4>
+      <p class="text-sm text-gray-700">Save 30-40% water. Apply water directly to plant roots. Perfect for dry regions.</p>
+     </div>
+     <div class="step-item">
+      <div class="step-number">
+       2
+      </div>
+      <h4 class="font-bold text-farm-dark mb-2">🌾 Mulching</h4>
+      <p class="text-sm text-gray-700">Cover soil with straw/leaves. Reduces evaporation by 50%. Keeps soil cool and moist.</p>
+     </div>
+     <div class="step-item">
+      <div class="step-number">
+       3
+      </div>
+      <h4 class="font-bold text-farm-dark mb-2">🚜 Zero Tillage</h4>
+      <p class="text-sm text-gray-700">No plowing. Retains soil moisture. Plant directly in previous crop residue.</p>
+     </div>
+     <div class="step-item">
+      <div class="step-number">
+       4
+      </div>
+      <h4 class="font-bold text-farm-dark mb-2">💨 Windbreaks</h4>
+      <p class="text-sm text-gray-700">Plant trees around fields. Reduces wind speed &amp; water loss by evaporation.</p>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4 mt-6">🌱 Drought-Resistant Crops</h3>
+     <div class="grid gap-2">
+      <div class="info-card">
+       <div class="info-label">
+        Best Option
+       </div>
+       <div class="info-value">
+        🌾 Bajra (Pearl Millet) • 🌾 Jowar • 🥜 Groundnut
+       </div>
+      </div>
+      <div class="info-card">
+       <div class="info-label">
+        Why Choose These?
+       </div>
+       <div class="info-value">
+        Needs minimal water, can survive in dry climate
+       </div>
+      </div>
+      <div class="info-card">
+       <div class="info-label">
+        Yield Expected
+       </div>
+       <div class="info-value">
+        10-15 Q/acre even with low rainfall
+       </div>
+      </div>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4 mt-6">💾 Water Harvesting Techniques</h3>
+     <div class="step-item">
+      <h4 class="font-bold text-farm-dark mb-2">🏞️ Build Check Dams</h4>
+      <p class="text-sm text-gray-700">Small barriers in streams to collect rainwater. Use during dry season.</p>
+     </div>
+     <div class="step-item">
+      <h4 class="font-bold text-farm-dark mb-2">🏊 Dig Farm Ponds</h4>
+      <p class="text-sm text-gray-700">1 pond per 2-5 acres. Store rainwater for irrigation in summer.</p>
+     </div>
+     <div class="step-item">
+      <h4 class="font-bold text-farm-dark mb-2">⬇️ Inject Deep Wells</h4>
+      <p class="text-sm text-gray-700">Access groundwater. Install bore wells during monsoon planning.</p>
+     </div>
+     <h3 class="text-lg font-bold text-farm-dark mb-4 mt-6">🎯 Government Support</h3>
+     <div class="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
+      <p class="text-sm text-gray-700">📱 Check for drought relief schemes in your state. Apply for crop insurance. Get subsidies on drip irrigation equipment (up to 50%).</p>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    // Screen navigation
+    function goToScreen(screenName) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + screenName).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // Username form
+    function submitUsername(e) {
+      e.preventDefault();
+      const username = document.getElementById('username-input').value;
+      localStorage.setItem('farmerName', username);
+      document.getElementById('greeting-name').textContent = username;
+      goToScreen('dashboard');
+    }
+
+    // Load saved username
+    window.addEventListener('load', () => {
+      const savedName = localStorage.getItem('farmerName');
+      if (savedName) {
+        document.getElementById('greeting-name').textContent = savedName;
+      }
+    });
+
+    // Element SDK Config
+    const defaultConfig = {
+      app_title: 'FARMER',
+      tagline: 'Smart Farming Starts Here',
+      helpline_number: '1800-XXX-XXXX',
+      primary_color: '#1a3a1a',
+      secondary_color: '#2d5a27',
+      accent_color: '#f4a623',
+      text_color: '#1a3a1a',
+      font_family: 'Poppins',
+      font_size: 16
+    };
+
+    async function onConfigChange(config) {
+      document.getElementById('app-title').textContent = config.app_title || defaultConfig.app_title;
+      document.getElementById('app-tagline').textContent = config.tagline || defaultConfig.tagline;
+      document.getElementById('helpline-main').textContent = '📞 ' + (config.helpline_number || defaultConfig.helpline_number);
+      document.getElementById('helpline-display').textContent = '📞 ' + (config.helpline_number || defaultConfig.helpline_number);
+    }
+
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange,
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          { 
+            get: () => config.primary_color || defaultConfig.primary_color,
+            set: (v) => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); }
+          },
+          { 
+            get: () => config.accent_color || defaultConfig.accent_color,
+            set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+        }
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['app_title', config.app_title || defaultConfig.app_title],
+        ['tagline', config.tagline || defaultConfig.tagline],
+        ['helpline_number', config.helpline_number || defaultConfig.helpline_number]
+      ])
+    });
+
+    lucide.createIcons();
+  </script>
+  <script>
+    // Crop data
+    const crops = {
+      kharif: [
+        { name: '🍚 Rice', season: 'Kharif (Jun-Oct)', location: 'Punjab, WB, UP', yield: '25-30 Q/acre' },
+        { name: '🧶 Cotton', season: 'Kharif (Apr-Oct)', location: 'Gujarat, Maharashtra', yield: '8-10 Q/acre' },
+        { name: '🌽 Maize', season: 'Kharif (Jun-Sep)', location: 'Karnataka, Bihar', yield: '20-25 Q/acre' },
+        { name: '🫘 Soybean', season: 'Kharif (Jun-Oct)', location: 'MP, Maharashtra', yield: '10-12 Q/acre' }
+      ],
+      rabi: [
+        { name: '🌾 Wheat', season: 'Rabi (Nov-Apr)', location: 'Punjab, Haryana, UP', yield: '20-25 Q/acre' },
+        { name: '🟡 Mustard', season: 'Rabi (Oct-Mar)', location: 'Rajasthan, MP', yield: '8-10 Q/acre' },
+        { name: '🟢 Chickpea', season: 'Rabi (Oct-Mar)', location: 'MP, Rajasthan', yield: '8-12 Q/acre' },
+        { name: '🥔 Potato', season: 'Rabi (Oct-Feb)', location: 'UP, WB, Bihar', yield: '80-100 Q/acre' }
+      ],
+      summer: [
+        { name: '🍬 Sugarcane', season: 'Summer (Feb-Jan)', location: 'UP, Maharashtra', yield: '350-400 Q/acre' },
+        { name: '🍈 Watermelon', season: 'Summer (Feb-May)', location: 'Rajasthan, Karnataka', yield: '100-150 Q/acre' },
+        { name: '🌻 Sunflower', season: 'Summer (Jan-Apr)', location: 'Karnataka, AP', yield: '6-8 Q/acre' },
+        { name: '🥒 Cucumber', season: 'Summer (Mar-Jun)', location: 'All India', yield: '50-60 Q/acre' }
+      ]
+    };
+
+    function showSeason(season) {
+      document.querySelectorAll('.season-tab').forEach(t => { t.className = 'season-tab px-6 py-2 rounded-full font-semibold bg-white text-farm-dark border'; });
+      document.getElementById('tab-' + season).className = 'season-tab px-6 py-2 rounded-full font-semibold bg-farm-mid text-white';
+      const container = document.getElementById('crop-cards');
+      container.innerHTML = crops[season].map(c => `
+        <div class="crop-card bg-white rounded-2xl p-6 shadow-sm transition-all duration-300 cursor-pointer">
+          <h3 class="font-bold text-xl mb-3">${c.name}</h3>
+          <p class="text-sm text-gray-600 mb-1"><strong>Season:</strong> ${c.season}</p>
+          <p class="text-sm text-gray-600 mb-1"><strong>Location:</strong> ${c.location}</p>
+          <p class="text-sm text-gray-600 mb-3"><strong>Yield:</strong> ${c.yield}</p>
+          <div class="video-placeholder rounded-xl h-24 flex items-center justify-center text-white text-sm"><i data-lucide="play-circle" class="w-6 h-6 opacity-70"></i></div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+    showSeason('kharif');
+
+    // Scroll animations
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Navbar show on scroll
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const curr = window.scrollY || document.documentElement.scrollTop;
+      const nav = document.getElementById('navbar');
+      if (curr > 500) { nav.style.transform = 'translateY(0)'; }
+      else { nav.style.transform = 'translateY(-100%)'; }
+      lastScroll = curr;
+    });
+
+    // Mobile menu
+    document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    });
+
+    // Contact form
+    document.getElementById('contact-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      document.getElementById('form-success').classList.remove('hidden');
+      e.target.reset();
+      setTimeout(() => document.getElementById('form-success').classList.add('hidden'), 3000);
+    });
+
+    // Element SDK
+    const defaultConfig = {
+      hero_title: 'FARMER',
+      hero_subtitle: 'Smart Crop Guidance for Better Yield and Profit',
+      helpline_number: '1800-XXX-XXXX',
+      primary_color: '#1a3a1a',
+      surface_color: '#e8f5e0',
+      text_color: '#1a3a1a',
+      action_color: '#f4a623',
+      secondary_action_color: '#4a8c3f',
+      font_family: 'Playfair Display',
+      font_size: 16
+    };
+
+    async function onConfigChange(config) {
+      document.getElementById('hero-title').textContent = config.hero_title || defaultConfig.hero_title;
+      document.getElementById('hero-subtitle').textContent = config.hero_subtitle || defaultConfig.hero_subtitle;
+      document.getElementById('helpline-display').textContent = '📞 ' + (config.helpline_number || defaultConfig.helpline_number);
+
+      const font = config.font_family || defaultConfig.font_family;
+      document.querySelectorAll('.font-heading').forEach(el => { el.style.fontFamily = `${font}, serif`; });
+
+      const baseSize = config.font_size || defaultConfig.font_size;
+      document.getElementById('hero-title').style.fontSize = `${baseSize * 5}px`;
+      document.getElementById('hero-subtitle').style.fontSize = `${baseSize * 1.4}px`;
+    }
+
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange,
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          { get: () => config.primary_color || defaultConfig.primary_color, set: (v) => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } },
+          { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+          { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+          { get: () => config.action_color || defaultConfig.action_color, set: (v) => { config.action_color = v; window.elementSdk.setConfig({ action_color: v }); } },
+          { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
+        ],
+        borderables: [],
+        fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+        fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['hero_title', config.hero_title || defaultConfig.hero_title],
+        ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+        ['helpline_number', config.helpline_number || defaultConfig.helpline_number]
+      ])
+    });
+
+    lucide.createIcons();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f5d86b882fd17b4',t:'MTc3Nzc5MzA2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
